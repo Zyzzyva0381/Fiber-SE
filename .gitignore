@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+runs/
+results/
+build/
+/docs/
+/reference/
+*.onnx
+*.so
+*.pt
+!DNSMOS/*.onnx

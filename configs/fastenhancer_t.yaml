@@ -1,0 +1,85 @@
+model:
+  name: fastenhancer_t
+  architecture:
+    family: FastEnhancer
+    scale: T
+    channels: 24
+    state_channels: 20
+    state_frequencies: 16
+    state_blocks: 2
+    attention_heads: 4
+    kernels: [8, 3, 3]
+frontend:
+  n_fft: 512
+  hop_length: 256
+  win_length: 512
+  window: hann
+  normalized: false
+  compression: 0.3
+data:
+  dataset: DNS3-local-paired
+  sample_rate: 16000
+  segment_seconds: 10.0
+  train:
+    noisy_dir: ${oc.env:DNS3_ROOT}/train_noisy
+    clean_dir: ${oc.env:DNS3_PAIR_ROOT}/train_clean_by_noisy_name
+    samples_per_epoch: 8192
+    sampling_with_replacement: false
+  dev:
+    noisy_dir: ${oc.env:DNS3_ROOT}/dev_noisy
+    clean_dir: ${oc.env:DNS3_ROOT}/dev_clean
+  test:
+    noisy_dir: ${oc.env:DNS3_ROOT}/test_noisy
+    clean_dir: ${oc.env:DNS3_ROOT}/test_clean
+training:
+  device: cuda
+  seed: 1
+  epochs: 200
+  batch_size: 16
+  fp16: true
+  num_workers: 4
+  persistent_workers: true
+  log_interval: 128
+  checkpoint_interval: 20
+  resume: true
+  output_dir: ${oc.env:FIBER_RUNS_ROOT,./runs}/fastenhancer_t
+  optimizer:
+    name: AdamP
+    parameter_group_contract: fiber_protocol_v1
+    lr: 0.002
+    weight_decay: 0.0001
+    wd_ratio: 1.0
+    betas: [0.95, 0.999]
+    projection: auto
+  scheduler:
+    name: CosineAnnealingWarmup
+    warmup_iterations: 500
+    eta_min: 1.0e-6
+loss:
+  mag_mse: 0.3
+  complex_mse: 0.2
+  consistency: 0.3
+  wav_l1: 0.2
+  pesq: 0.0
+validation:
+  interval: 20
+  batch_size: 16
+  num_workers: 2
+selection:
+  split: independent-DNS3-Dev1000
+  metric: PESQ
+  interval: 20
+  workers: 4
+evaluation:
+  split: independent-DNS3-Test1000
+  metrics: [SISNR, SDR, PESQ, ESTOI, STOI, OVRL, SIG, BAK, P808_MOS]
+  precision: float32
+  autocast: false
+  tf32: false
+  waveform_transport: in-memory-float32
+deployment:
+  onnx_opset: 17
+  stateful_frames_for_export_check: 16
+  protocol: optimized-candidate-screen
+  benchmark_ort: 1.19.2
+  benchmark_threads: 1

@@ -1,0 +1,27 @@
+[project]
+name = "fiber-se"
+version = "0.1.0"
+description = "Fiber paper result reproduction"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = { file = "LICENSE" }
+dependencies = [
+  "librosa==0.11.0",
+  "numpy==2.0.2",
+  "onnx==1.17.0",
+  "omegaconf==2.3.0",
+  "onnxruntime==1.19.2",
+  "pesq==0.0.4",
+  "pystoi==0.4.1",
+  "soundfile==0.13.1",
+  "torch==2.8.0",
+  "matplotlib==3.10.5",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
